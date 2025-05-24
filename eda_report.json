@@ -1,0 +1,146 @@
+{
+  "analysis_date": "2025-05-24 22:15:51",
+  "dataset_info": {
+    "total_objects": 4826,
+    "fraudsters": 1891,
+    "fraud_rate": 0.39183588893493576,
+    "missing_totalArea": 2026,
+    "missing_totalArea_pct": 41.980936593452135
+  },
+  "group_comparison": {
+    "avg_consumption": {
+      "honest_mean": 2820.227571578526,
+      "fraud_mean": 3445.732658686281,
+      "difference_pct": 22.17924161196857,
+      "p_value": 3.020162661633086e-05,
+      "significant": true
+    },
+    "min_consumption": {
+      "honest_mean": 1085.9274275979558,
+      "fraud_mean": 1203.2168164992067,
+      "difference_pct": 10.800849662734107,
+      "p_value": 0.09938546612088585,
+      "significant": false
+    },
+    "max_consumption": {
+      "honest_mean": 6008.124701873935,
+      "fraud_mean": 7944.415124272871,
+      "difference_pct": 32.227866738435154,
+      "p_value": 8.656409621385195e-07,
+      "significant": true
+    },
+    "cv": {
+      "honest_mean": 0.5793794506040786,
+      "fraud_mean": 0.6519569755000243,
+      "difference_pct": 12.52676891116421,
+      "p_value": 1.7634443494819227e-08,
+      "significant": true
+    },
+    "summer_winter_ratio": {
+      "honest_mean": 3.5900191860242265,
+      "fraud_mean": 23.533951730886567,
+      "difference_pct": 555.538327552764,
+      "p_value": 0.0005812767171647227,
+      "significant": true
+    },
+    "heating_season": {
+      "honest_mean": 2857.6911413969337,
+      "fraud_mean": 2965.559870061192,
+      "difference_pct": 3.774681143866677,
+      "p_value": 0.4768661864788899,
+      "significant": false
+    },
+    "roomsCount": {
+      "honest_mean": 2.670868824531516,
+      "fraud_mean": 2.8043363299841353,
+      "difference_pct": 4.997156888677608,
+      "p_value": 0.04368107268780125,
+      "significant": true
+    },
+    "residentsCount": {
+      "honest_mean": 2.1894378194207835,
+      "fraud_mean": 1.908514013749339,
+      "difference_pct": -12.830864762615773,
+      "p_value": 3.194714476974612e-08,
+      "significant": true
+    }
+  },
+  "optimal_thresholds": {
+    "avg_consumption": {
+      "threshold": 0.0,
+      "metrics": {
+        "precision": 0.39183588893493576,
+        "recall": 1.0,
+        "f1": 0.5630489801994938
+      }
+    },
+    "min_consumption": {
+      "threshold": 0.0,
+      "metrics": {
+        "precision": 0.39183588893493576,
+        "recall": 1.0,
+        "f1": 0.5630489801994938
+      }
+    },
+    "heating_season": {
+      "threshold": 0.0,
+      "metrics": {
+        "precision": 0.39183588893493576,
+        "recall": 1.0,
+        "f1": 0.5630489801994938
+      }
+    },
+    "cv": {
+      "threshold": 2.9146096642517145,
+      "metrics": {
+        "precision": 0.39276807980049877,
+        "recall": 0.9994711792702274,
+        "f1": 0.5639266000298374
+      }
+    }
+  },
+  "fraud_rules": {
+    "rule1": {
+      "description": "Высокое потребление в отопительный сезон > 3000 кВт·ч (ключевой критерий)",
+      "precision": 0.3955674949630625,
+      "recall": 0.3114754098360656,
+      "caught": 1489,
+      "fraudsters_caught": 589
+    },
+    "rule2": {
+      "description": "Очень высокое минимальное потребление > 500 кВт·ч",
+      "precision": 0.41467807294011705,
+      "recall": 0.48704389212057114,
+      "caught": 2221,
+      "fraudsters_caught": 921
+    },
+    "rule3": {
+      "description": "Отсутствие сезонности + высокое потребление > 1000 кВт·ч",
+      "precision": 0.393717277486911,
+      "recall": 0.19883659439450027,
+      "caught": 955,
+      "fraudsters_caught": 376
+    },
+    "rule4": {
+      "description": "Сверхстабильное потребление (CV < 0.15) + высокое потребление",
+      "precision": 0.4051724137931034,
+      "recall": 0.024854574299312534,
+      "caught": 116,
+      "fraudsters_caught": 47
+    },
+    "rule5": {
+      "description": "Экстремально высокое потребление на жителя > 1000 кВт·ч",
+      "precision": 0.43845500848896435,
+      "recall": 0.5462718138551031,
+      "caught": 2356,
+      "fraudsters_caught": 1033
+    }
+  },
+  "key_findings": [
+    "Мошенники имеют значительно более высокое среднее потребление",
+    "У мошенников более стабильное потребление (низкий CV)",
+    "Отсутствие сезонности - важный признак коммерческой деятельности",
+    "КЛЮЧЕВОЙ КРИТЕРИЙ: Высокое потребление в отопительный сезон (>3000 кВт·ч)",
+    "Минимальное потребление > 50 кВт·ч - сильный индикатор"
+  ]
+}

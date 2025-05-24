@@ -12,6 +12,7 @@ from scipy import stats
 import seaborn as sns
 import matplotlib.pyplot as plt
 from config import FRAUD_RULES, PLOT_THEME
+import os
 
 
 class FraudDataAnalyzer:
@@ -23,18 +24,28 @@ class FraudDataAnalyzer:
 
     def load_data(self, train_path, test_path=None):
         """Загрузка и объединение данных"""
+        print(f"🔍 Загружаем данные:")
+        print(f"   Основной файл: {train_path}")
+        
         with open(train_path, 'r', encoding='utf-8') as f:
             train_data = json.load(f)
-
+        
+        print(f"   📊 Из основного файла: {len(train_data)} объектов")
         all_data = train_data
 
-        if test_path:
+        if test_path and os.path.exists(test_path):
+            print(f"   Дополнительный файл: {test_path}")
             with open(test_path, 'r', encoding='utf-8') as f:
                 test_data = json.load(f)
+            print(f"   📊 Из дополнительного файла: {len(test_data)} объектов")
             all_data += test_data
+        elif test_path:
+            print(f"   ⚠️ Дополнительный файл не найден: {test_path}")
+        else:
+            print(f"   ℹ️ Дополнительный файл не указан")
 
         self.df = self._extract_features(all_data)
-        print(f"✅ Загружено {len(self.df)} объектов")
+        print(f"✅ Итого загружено: {len(self.df)} объектов")
         return self.df
 
     def _extract_features(self, data):
@@ -84,9 +95,35 @@ class FraudDataAnalyzer:
                     if feature_dict['winter_avg'] > 0 else 1
                 )
 
+                # Отопительный сезон (ключевой критерий из кейса!)
+                heating_months = [consumption.get(m, 0) for m in ['10', '11', '12', '1', '2', '3', '4']
+                                  if consumption.get(m, 0) > 0]
+                feature_dict['heating_season'] = np.mean(
+                    heating_months) if heating_months else 0
+
                 # Коэффициент вариации
-                feature_dict['cv'] = feature_dict['std_consumption'] / \
-                    feature_dict['avg_consumption'] if feature_dict['avg_consumption'] > 0 else 0
+                feature_dict['cv'] = feature_dict['std_consumption'] / feature_dict['avg_consumption'] \
+                    if feature_dict['avg_consumption'] > 0 else 0
+
+                # Потребление на жителя и площадь
+                residents_count = feature_dict.get('residentsCount', 1)
+                if residents_count <= 0:
+                    residents_count = 1
+                feature_dict['consumption_per_resident'] = feature_dict['avg_consumption'] / residents_count
+
+                area = feature_dict.get('totalArea')
+                if area is None or area <= 0:
+                    # Примерная площадь если не указана
+                    area = feature_dict.get('roomsCount', 2) * 17.5
+                feature_dict['consumption_per_area'] = feature_dict['avg_consumption'] / \
+                    area if area > 0 else 0
+
+                # Дополнительные признаки для правил
+                feature_dict['no_seasonality'] = 1 if feature_dict['summer_winter_ratio'] > 0.8 else 0
+                feature_dict['stable_high_consumption'] = 1 if (
+                    feature_dict['avg_consumption'] > 300 and feature_dict['cv'] < 0.3
+                ) else 0
+                feature_dict['high_heating_consumption'] = 1 if feature_dict['heating_season'] > 3000 else 0
 
             features.append(feature_dict)
 
@@ -118,7 +155,7 @@ class FraudDataAnalyzer:
 
         comparison = {}
         features = ['avg_consumption', 'min_consumption', 'max_consumption',
-                    'cv', 'summer_winter_ratio', 'roomsCount', 'residentsCount']
+                    'cv', 'summer_winter_ratio', 'heating_season', 'roomsCount', 'residentsCount']
 
         for feature in features:
             if feature in self.df.columns:
@@ -136,7 +173,7 @@ class FraudDataAnalyzer:
                         'fraud_mean': float(fraud.mean()),
                         'difference_pct': float((fraud.mean() - honest.mean()) / honest.mean() * 100),
                         'p_value': float(p_value),
-                        'significant': p_value < 0.05
+                        'significant': bool(p_value < 0.05)
                     }
 
                     print(f"\n{feature}:")
@@ -157,7 +194,7 @@ class FraudDataAnalyzer:
 
         thresholds = {}
 
-        for feature in ['avg_consumption', 'min_consumption', 'cv']:
+        for feature in ['avg_consumption', 'min_consumption', 'heating_season', 'cv']:
             if feature not in self.df.columns:
                 continue
 
@@ -217,25 +254,32 @@ class FraudDataAnalyzer:
         rules_results = {}
 
         for rule_name, rule_info in FRAUD_RULES.items():
-            mask = rule_info['condition'](self.df)
+            try:
+                mask = rule_info['condition'](self.df)
 
-            precision = self.df[mask]['isCommercial'].mean(
-            ) if mask.sum() > 0 else 0
-            recall = mask[self.df['isCommercial'] == True].mean() if (
-                self.df['isCommercial'] == True).sum() > 0 else 0
+                precision = self.df[mask]['isCommercial'].mean(
+                ) if mask.sum() > 0 else 0
+                recall = mask[self.df['isCommercial'] == True].mean() if (
+                    self.df['isCommercial'] == True).sum() > 0 else 0
 
-            rules_results[rule_name] = {
-                'description': rule_info['description'],
-                'precision': float(precision),
-                'recall': float(recall),
-                'caught': int(mask.sum()),
-                'fraudsters_caught': int(mask[self.df['isCommercial'] == True].sum())
-            }
+                rules_results[rule_name] = {
+                    'description': rule_info['description'],
+                    'precision': float(precision),
+                    'recall': float(recall),
+                    'caught': int(mask.sum()),
+                    'fraudsters_caught': int(mask[self.df['isCommercial'] == True].sum())
+                }
 
-            print(f"\n{rule_name}: {rule_info['description']}")
-            print(f"  Точность: {precision:.1%}")
-            print(f"  Покрытие: {recall:.1%}")
-            print(f"  Поймано: {mask.sum()} объектов")
+                print(f"\n{rule_name}: {rule_info['description']}")
+                print(f"  Точность: {precision:.1%}")
+                print(f"  Покрытие: {recall:.1%}")
+                print(f"  Поймано: {mask.sum()} объектов")
+
+            except KeyError as e:
+                print(
+                    f"\n❌ Ошибка в правиле {rule_name}: отсутствует признак {e}")
+                print(f"   Доступные признаки: {list(self.df.columns)}")
+                continue
 
         self.insights['fraud_rules'] = rules_results
         return rules_results
@@ -325,61 +369,6 @@ class FraudDataAnalyzer:
                 row=2, col=1
             )
 
-        # 5. Количество жителей
-        for is_commercial in [False, True]:
-            data = self.df[self.df['isCommercial']
-                           == is_commercial]['residentsCount']
-            fig.add_trace(
-                go.Box(y=data, name='Мошенники' if is_commercial else 'Честные'),
-                row=2, col=2
-            )
-
-        # 6. Тип здания
-        building_stats = self.df.groupby(
-            ['buildingType', 'isCommercial']).size().unstack(fill_value=0)
-        for col in building_stats.columns:
-            fig.add_trace(
-                go.Bar(x=building_stats.index, y=building_stats[col],
-                       name='Мошенники' if col else 'Честные'),
-                row=2, col=3
-            )
-
-        # 7. Минимальное потребление
-        for is_commercial in [False, True]:
-            data = self.df[self.df['isCommercial']
-                           == is_commercial]['min_consumption']
-            fig.add_trace(
-                go.Histogram(x=data, name='Мошенники' if is_commercial else 'Честные',
-                             opacity=0.7, nbinsx=30),
-                row=3, col=1
-            )
-
-        # 8. Корреляция с мошенничеством
-        numeric_cols = self.df.select_dtypes(include=[np.number]).columns
-        correlations = self.df[numeric_cols].corrwith(
-            self.df['isCommercial']).abs().sort_values(ascending=False).head(10)
-
-        fig.add_trace(
-            go.Bar(x=correlations.values, y=correlations.index, orientation='h'),
-            row=3, col=2
-        )
-
-        # 9. Эффективность правил
-        if 'fraud_rules' in self.insights:
-            rules_data = self.insights['fraud_rules']
-            rule_names = list(rules_data.keys())
-            precisions = [rules_data[r]['precision'] for r in rule_names]
-            recalls = [rules_data[r]['recall'] for r in rule_names]
-
-            fig.add_trace(
-                go.Bar(x=rule_names, y=precisions, name='Precision'),
-                row=3, col=3
-            )
-            fig.add_trace(
-                go.Bar(x=rule_names, y=recalls, name='Recall'),
-                row=3, col=3
-            )
-
         # Настройка layout
         fig.update_layout(
             height=1200,
@@ -407,6 +396,7 @@ class FraudDataAnalyzer:
                 "Мошенники имеют значительно более высокое среднее потребление",
                 "У мошенников более стабильное потребление (низкий CV)",
                 "Отсутствие сезонности - важный признак коммерческой деятельности",
+                "КЛЮЧЕВОЙ КРИТЕРИЙ: Высокое потребление в отопительный сезон (>3000 кВт·ч)",
                 "Минимальное потребление > 50 кВт·ч - сильный индикатор"
             ]
         }
@@ -419,7 +409,7 @@ class FraudDataAnalyzer:
         return report
 
 
-def run_full_analysis(train_path='data/dataset_train.json', test_path='data/dataset_test.json'):
+def run_full_analysis(train_path='data/dataset_train.json', test_path=None):
     """Запуск полного анализа"""
     analyzer = FraudDataAnalyzer()
 

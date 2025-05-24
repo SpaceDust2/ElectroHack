@@ -1,0 +1,523 @@
+{
+  "training_completed_at": "2025-05-25T00:14:18.806500",
+  "best_model": "XGBoost",
+  "best_score": 0.7586635148901132,
+  "total_features": 70,
+  "gpu_used": true,
+  "models_results": {
+    "CatBoost": {
+      "cv_mean_auc": 0.7586388070586153,
+      "cv_std_auc": 0.00436688270247245,
+      "cv_scores": [
+        0.7535745910739731,
+        0.7570013430320075,
+        0.757880172701297,
+        0.7667631125893477,
+        0.7579748158964512
+      ],
+      "detailed_cv_metrics": {
+        "accuracy": 0.7063820969747203,
+        "precision": 0.6618852459016393,
+        "recall": 0.5124272871496562,
+        "f1": 0.5776453055141579,
+        "auc": 0.7581231638794721,
+        "confusion_matrix": [
+          [
+            2440,
+            495
+          ],
+          [
+            922,
+            969
+          ]
+        ]
+      },
+      "top_features": [
+        {
+          "feature": "month_5",
+          "importance": 6.2836306863333
+        },
+        {
+          "feature": "is_city",
+          "importance": 4.607401887191383
+        },
+        {
+          "feature": "month_8",
+          "importance": 4.511242266479569
+        },
+        {
+          "feature": "totalArea",
+          "importance": 4.036047062265568
+        },
+        {
+          "feature": "month_7",
+          "importance": 3.754424450612452
+        },
+        {
+          "feature": "autumn_winter_ratio",
+          "importance": 3.460277847663997
+        },
+        {
+          "feature": "heating_summer_ratio",
+          "importance": 3.430911553351973
+        },
+        {
+          "feature": "month_11",
+          "importance": 3.3932629765740066
+        },
+        {
+          "feature": "min_to_avg_ratio",
+          "importance": 3.1483353034155495
+        },
+        {
+          "feature": "month_12",
+          "importance": 2.9517037349332327
+        },
+        {
+          "feature": "month_9",
+          "importance": 2.9353503935933363
+        },
+        {
+          "feature": "month_6",
+          "importance": 2.8615342200249776
+        },
+        {
+          "feature": "spring_winter_ratio",
+          "importance": 2.576570349080788
+        },
+        {
+          "feature": "month_10",
+          "importance": 2.356086375337525
+        },
+        {
+          "feature": "max_consumption",
+          "importance": 2.2633649356222274
+        }
+      ]
+    },
+    "XGBoost": {
+      "cv_mean_auc": 0.7586635148901132,
+      "cv_std_auc": 0.009265589940961317,
+      "cv_scores": [
+        0.7477626498496447,
+        0.7554374769025536,
+        0.7610755072424578,
+        0.7751412887699088,
+        0.7539006516860008
+      ],
+      "detailed_cv_metrics": {
+        "accuracy": 0.7115623704931621,
+        "precision": 0.6586141131595677,
+        "recall": 0.5478582760444209,
+        "f1": 0.5981524249422633,
+        "auc": 0.7580937949598971,
+        "confusion_matrix": [
+          [
+            2398,
+            537
+          ],
+          [
+            855,
+            1036
+          ]
+        ]
+      },
+      "top_features": [
+        {
+          "feature": "stable_high_consumption",
+          "importance": 0.06626666337251663
+        },
+        {
+          "feature": "high_heating_consumption",
+          "importance": 0.039019625633955
+        },
+        {
+          "feature": "has_zero_months",
+          "importance": 0.030588330700993538
+        },
+        {
+          "feature": "is_city",
+          "importance": 0.02746652252972126
+        },
+        {
+          "feature": "heating_summer_ratio",
+          "importance": 0.023611215874552727
+        },
+        {
+          "feature": "zero_consumption_months",
+          "importance": 0.022778695449233055
+        },
+        {
+          "feature": "is_major_city",
+          "importance": 0.022476989775896072
+        },
+        {
+          "feature": "residentsCount",
+          "importance": 0.0185711532831192
+        },
+        {
+          "feature": "month_5",
+          "importance": 0.018425162881612778
+        },
+        {
+          "feature": "autumn_winter_ratio",
+          "importance": 0.018293628469109535
+        },
+        {
+          "feature": "month_8",
+          "importance": 0.01823112927377224
+        },
+        {
+          "feature": "roomsCount",
+          "importance": 0.017338735982775688
+        },
+        {
+          "feature": "residents_per_room",
+          "importance": 0.01603066176176071
+        },
+        {
+          "feature": "month_9",
+          "importance": 0.015729086473584175
+        },
+        {
+          "feature": "summer_total",
+          "importance": 0.015087353996932507
+        }
+      ]
+    },
+    "RandomForest": {
+      "cv_mean_auc": 0.745198926344953,
+      "cv_std_auc": 0.012489016956995279,
+      "cv_scores": [
+        0.7273511841886431,
+        0.7435304615883832,
+        0.745756830083917,
+        0.7664791830038848,
+        0.7428769728599371
+      ],
+      "detailed_cv_metrics": {
+        "accuracy": 0.7007874015748031,
+        "precision": 0.6780876494023904,
+        "recall": 0.45002644103648864,
+        "f1": 0.5410044500953591,
+        "auc": 0.7450298508941755,
+        "confusion_matrix": [
+          [
+            2531,
+            404
+          ],
+          [
+            1040,
+            851
+          ]
+        ]
+      },
+      "top_features": [
+        {
+          "feature": "heating_summer_ratio",
+          "importance": 0.05193346857623907
+        },
+        {
+          "feature": "autumn_winter_ratio",
+          "importance": 0.04660275236805307
+        },
+        {
+          "feature": "month_8",
+          "importance": 0.04312859867793465
+        },
+        {
+          "feature": "summer_winter_ratio",
+          "importance": 0.03859056962657465
+        },
+        {
+          "feature": "month_9",
+          "importance": 0.03150666842143443
+        },
+        {
+          "feature": "summer_total",
+          "importance": 0.030226558373341435
+        },
+        {
+          "feature": "month_5",
+          "importance": 0.028821025014852692
+        },
+        {
+          "feature": "month_7",
+          "importance": 0.027214745662387598
+        },
+        {
+          "feature": "summer_avg",
+          "importance": 0.025566601602951284
+        },
+        {
+          "feature": "month_12",
+          "importance": 0.023911065552657068
+        },
+        {
+          "feature": "totalArea",
+          "importance": 0.023610159279643488
+        },
+        {
+          "feature": "month_6",
+          "importance": 0.02167425449355489
+        },
+        {
+          "feature": "area_per_resident",
+          "importance": 0.021576361434606478
+        },
+        {
+          "feature": "consumption_range",
+          "importance": 0.02076960684423012
+        },
+        {
+          "feature": "min_to_avg_ratio",
+          "importance": 0.020690910501574
+        }
+      ]
+    }
+  },
+  "test_results": {
+    "CatBoost": {
+      "auc": 0.781027624865736,
+      "accuracy": 0.718,
+      "precision": 0.6950354609929078,
+      "recall": 0.5,
+      "f1": 0.5816023738872403,
+      "confusion_matrix": [
+        [
+          522,
+          86
+        ],
+        [
+          196,
+          196
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.7270194986072424,
+          "recall": 0.8585526315789473,
+          "f1-score": 0.7873303167420814,
+          "support": 608.0
+        },
+        "1": {
+          "precision": 0.6950354609929078,
+          "recall": 0.5,
+          "f1-score": 0.5816023738872403,
+          "support": 392.0
+        },
+        "accuracy": 0.718,
+        "macro avg": {
+          "precision": 0.7110274798000751,
+          "recall": 0.6792763157894737,
+          "f1-score": 0.6844663453146609,
+          "support": 1000.0
+        },
+        "weighted avg": {
+          "precision": 0.7144817558624231,
+          "recall": 0.718,
+          "f1-score": 0.7066849631429838,
+          "support": 1000.0
+        }
+      }
+    },
+    "XGBoost": {
+      "auc": 0.7800877752416756,
+      "accuracy": 0.73,
+      "precision": 0.698051948051948,
+      "recall": 0.548469387755102,
+      "f1": 0.6142857142857143,
+      "confusion_matrix": [
+        [
+          515,
+          93
+        ],
+        [
+          177,
+          215
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.7442196531791907,
+          "recall": 0.8470394736842105,
+          "f1-score": 0.7923076923076923,
+          "support": 608.0
+        },
+        "1": {
+          "precision": 0.698051948051948,
+          "recall": 0.548469387755102,
+          "f1-score": 0.6142857142857143,
+          "support": 392.0
+        },
+        "accuracy": 0.73,
+        "macro avg": {
+          "precision": 0.7211358006155694,
+          "recall": 0.6977544307196563,
+          "f1-score": 0.7032967032967032,
+          "support": 1000.0
+        },
+        "weighted avg": {
+          "precision": 0.7261219127693116,
+          "recall": 0.73,
+          "f1-score": 0.7225230769230769,
+          "support": 1000.0
+        }
+      }
+    },
+    "RandomForest": {
+      "auc": 0.745376275510204,
+      "accuracy": 0.699,
+      "precision": 0.6812749003984063,
+      "recall": 0.4362244897959184,
+      "f1": 0.5318818040435459,
+      "confusion_matrix": [
+        [
+          528,
+          80
+        ],
+        [
+          221,
+          171
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.7049399198931909,
+          "recall": 0.868421052631579,
+          "f1-score": 0.7781871775976419,
+          "support": 608.0
+        },
+        "1": {
+          "precision": 0.6812749003984063,
+          "recall": 0.4362244897959184,
+          "f1-score": 0.5318818040435459,
+          "support": 392.0
+        },
+        "accuracy": 0.699,
+        "macro avg": {
+          "precision": 0.6931074101457986,
+          "recall": 0.6523227712137487,
+          "f1-score": 0.6550344908205938,
+          "support": 1000.0
+        },
+        "weighted avg": {
+          "precision": 0.6956632322512354,
+          "recall": 0.699,
+          "f1-score": 0.6816354711644362,
+          "support": 1000.0
+        }
+      }
+    }
+  },
+  "best_model_details": {
+    "feature_importance": [
+      {
+        "feature": "stable_high_consumption",
+        "importance": 0.06626666337251663
+      },
+      {
+        "feature": "high_heating_consumption",
+        "importance": 0.039019625633955
+      },
+      {
+        "feature": "has_zero_months",
+        "importance": 0.030588330700993538
+      },
+      {
+        "feature": "is_city",
+        "importance": 0.02746652252972126
+      },
+      {
+        "feature": "heating_summer_ratio",
+        "importance": 0.023611215874552727
+      },
+      {
+        "feature": "zero_consumption_months",
+        "importance": 0.022778695449233055
+      },
+      {
+        "feature": "is_major_city",
+        "importance": 0.022476989775896072
+      },
+      {
+        "feature": "residentsCount",
+        "importance": 0.0185711532831192
+      },
+      {
+        "feature": "month_5",
+        "importance": 0.018425162881612778
+      },
+      {
+        "feature": "autumn_winter_ratio",
+        "importance": 0.018293628469109535
+      },
+      {
+        "feature": "month_8",
+        "importance": 0.01823112927377224
+      },
+      {
+        "feature": "roomsCount",
+        "importance": 0.017338735982775688
+      },
+      {
+        "feature": "residents_per_room",
+        "importance": 0.01603066176176071
+      },
+      {
+        "feature": "month_9",
+        "importance": 0.015729086473584175
+      },
+      {
+        "feature": "summer_total",
+        "importance": 0.015087353996932507
+      },
+      {
+        "feature": "totalArea",
+        "importance": 0.014804181642830372
+      },
+      {
+        "feature": "month_7",
+        "importance": 0.014674428850412369
+      },
+      {
+        "feature": "month_12",
+        "importance": 0.014660903252661228
+      },
+      {
+        "feature": "commercial_pattern_score",
+        "importance": 0.014653162099421024
+      },
+      {
+        "feature": "month_6",
+        "importance": 0.014566695317626
+      }
+    ],
+    "cv_detailed_metrics": {
+      "accuracy": 0.7115623704931621,
+      "precision": 0.6586141131595677,
+      "recall": 0.5478582760444209,
+      "f1": 0.5981524249422633,
+      "auc": 0.7580937949598971,
+      "confusion_matrix": [
+        [
+          2398,
+          537
+        ],
+        [
+          855,
+          1036
+        ]
+      ]
+    }
+  },
+  "data_analysis": {
+    "total_samples": 4826,
+    "class_distribution": {
+      "total_samples": 4826,
+      "negative_samples": 2935,
+      "positive_samples": 1891,
+      "positive_rate": 0.39183588893493576
+    }
+  }
+}

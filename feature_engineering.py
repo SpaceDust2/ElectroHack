@@ -182,6 +182,30 @@ class FeatureEngineer:
             features[f'{season}_avg'] = np.mean(values) if values else 0
             features[f'{season}_total'] = sum(values) if values else 0
 
+        # КЛЮЧЕВОЙ ПРИЗНАК: Отопительный сезон (октябрь-апрель)
+        heating_months = ['10', '11', '12', '1', '2', '3', '4']
+        heating_values = []
+        for month in heating_months:
+            value = consumption.get(month)
+            if value is not None and value >= 0:
+                heating_values.append(value)
+
+        features['heating_season'] = np.mean(
+            heating_values) if heating_values else 0
+        features['heating_season_total'] = sum(
+            heating_values) if heating_values else 0
+
+        # Отношение отопительного сезона к летнему периоду
+        if features['summer_avg'] > 0:
+            features['heating_summer_ratio'] = features['heating_season'] / \
+                features['summer_avg']
+        else:
+            features['heating_summer_ratio'] = 1
+
+        # Индикатор высокого потребления в отопительный сезон (>3000 кВт·ч - критерий из кейса)
+        features['high_heating_consumption'] = int(
+            features['heating_season'] > 3000)
+
         # Сезонные отношения
         if features['winter_avg'] > 0:
             features['summer_winter_ratio'] = features['summer_avg'] / \
@@ -303,14 +327,14 @@ class FeatureEngineer:
         return {
             'consumption': [
                 'avg_consumption', 'min_consumption', 'max_consumption',
-                'total_consumption', 'consumption_range'
+                'total_consumption', 'consumption_range', 'heating_season'
             ],
             'seasonality': [
                 'summer_winter_ratio', 'has_seasonality', 'no_seasonality',
-                'max_seasonal_diff'
+                'max_seasonal_diff', 'heating_summer_ratio', 'high_heating_consumption'
             ],
             'stability': [
-                'cv', 'stable', 'unstable', 'consumption_stability_score'
+                'cv', 'very_stable', 'stable', 'unstable', 'consumption_stability_score'
             ],
             'anomalies': [
                 'high_min_consumption', 'stable_high_consumption',
@@ -318,6 +342,6 @@ class FeatureEngineer:
             ],
             'basic': [
                 'roomsCount', 'residentsCount', 'totalArea',
-                'consumption_per_resident'
+                'consumption_per_resident', 'area_per_resident'
             ]
         }

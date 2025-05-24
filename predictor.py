@@ -21,44 +21,64 @@ class FraudPredictor:
         self.feature_engineer = self.model_data['feature_engineer']
         self.model_name = self.model_data.get('model_name', 'Unknown')
 
-    def predict_from_file(self, data_path: str) -> List[Dict]:
+    def predict_from_file(self, data_path: str, detailed: bool = False) -> List[Dict]:
         """Предсказание для данных из файла"""
         with open(data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
 
-        return self.predict(data)
+        return self.predict(data, detailed=detailed)
 
-    def predict(self, data: Union[List[Dict], Dict]) -> List[Dict]:
-        """Предсказание для одного или нескольких объектов"""
-        # Преобразуем в список если передан один объект
+    def predict(self, data: Union[List[Dict], Dict], detailed: bool = False) -> List[Dict]:
+        """Предсказание для одного или нескольких объектов
+        detailed: если True — подробный результат, иначе только исходные поля + isCommercial
+        """
         if isinstance(data, dict):
             data = [data]
 
-        # Извлечение признаков
         df = self.feature_engineer.extract_features(data)
-
-        # Предсказание
         X = df[self.feature_names]
-        probabilities = self.model.predict_proba(X)[:, 1]
-        predictions = self.model.predict(X)
 
-        # Формирование результатов
+        # Поддержка ансамбля
+        if hasattr(self, 'models'):
+            probabilities = np.mean([m.predict_proba(X)[:, 1]
+                                    for m in self.models], axis=0)
+            predictions = probabilities > 0.5
+        else:
+            probabilities = self.model.predict_proba(X)[:, 1]
+            predictions = self.model.predict(X)
+
         results = []
         for i, record in enumerate(data):
             fraud_prob = float(probabilities[i])
             is_fraud = bool(predictions[i])
 
-            result = {
-                'accountId': record.get('accountId', f'UNKNOWN_{i}'),
-                'isCommercial': is_fraud,
-                'fraud_probability': fraud_prob,
-                'fraud_probability_percent': f"{fraud_prob * 100:.1f}%",
-                'risk_level': self._get_risk_level(fraud_prob),
-                'interpretation': self._get_interpretation(is_fraud, fraud_prob),
-                'patterns': self._analyze_patterns(df.iloc[i])
-            }
-
-            results.append(result)
+            if not detailed:
+                # Короткий формат: все исходные поля + isCommercial после accountId
+                result = {}
+                for k, v in record.items():
+                    result[k] = v
+                    if k == 'accountId':
+                        result['isCommercial'] = is_fraud
+                # Если accountId не было, просто добавим isCommercial в начало
+                if 'accountId' not in record:
+                    result = {'isCommercial': is_fraud, **record}
+                results.append(result)
+            else:
+                # Подробный формат (старый)
+                result = {
+                    'accountId': record.get('accountId', f'UNKNOWN_{i}'),
+                    'isCommercial': is_fraud,
+                    'fraud_probability': fraud_prob,
+                    'fraud_probability_percent': f"{fraud_prob * 100:.1f}%",
+                    'risk_level': self._get_risk_level(fraud_prob),
+                    'interpretation': self._get_interpretation(is_fraud, fraud_prob),
+                    'patterns': self._analyze_patterns(df.iloc[i])
+                }
+                # Добавим исходные поля для удобства
+                for k, v in record.items():
+                    if k not in result:
+                        result[k] = v
+                results.append(result)
 
         return results
 
@@ -73,18 +93,18 @@ class FraudPredictor:
         """Текстовая интерпретация результата"""
         if is_fraud:
             if probability > 0.9:
-                return "🚨 МОШЕННИК с очень высокой вероятностью!"
+                return "🚨 НАРУШИТЕЛЬ с очень высокой вероятностью! Коммерческое использование под видом жилого"
             elif probability > 0.8:
-                return "⚠️ МОШЕННИК с высокой вероятностью"
+                return "⚠️ НАРУШИТЕЛЬ с высокой вероятностью - требует проверки"
             else:
-                return "📍 Вероятный МОШЕННИК"
+                return "📍 Вероятный нарушитель - рекомендуется дополнительная проверка"
         else:
             if probability < 0.2:
-                return "✅ Честный житель с высокой вероятностью"
+                return "✅ Добросовестный потребитель - соответствует бытовому использованию"
             elif probability < 0.4:
-                return "✅ Скорее всего честный житель"
+                return "✅ Скорее всего добросовестный потребитель"
             else:
-                return "❓ Требует дополнительной проверки"
+                return "❓ Пограничный случай - требует дополнительной проверки"
 
     def _analyze_patterns(self, features: pd.Series) -> Dict:
         """Анализ паттернов в данных объекта"""
@@ -203,11 +223,11 @@ class FraudPredictor:
             simplified = []
             for r in results:
                 row = {
-                    'accountId': r['accountId'],
-                    'isCommercial': r['isCommercial'],
-                    'fraud_probability': r['fraud_probability'],
-                    'risk_level': r['risk_level'],
-                    'interpretation': r['interpretation']
+                    'Лицевой счет': r['accountId'],
+                    'Нарушитель': 'Да' if r['isCommercial'] else 'Нет',
+                    'Вероятность нарушения': f"{r['fraud_probability']:.2%}",
+                    'Уровень риска': r['risk_level'],
+                    'Интерпретация': r['interpretation']
                 }
                 simplified.append(row)
 
@@ -221,29 +241,35 @@ class FraudPredictor:
         return filepath
 
 
-def predict_fraud(data_path: str, model_path: str = 'fraud_detection_model.joblib') -> str:
+def predict_fraud(data_path: str, model_path: str = 'fraud_detection_model.joblib', detailed: bool = False) -> str:
     """Быстрая функция для предсказания"""
     predictor = FraudPredictor(model_path)
-    results = predictor.predict_from_file(data_path)
+    results = predictor.predict_from_file(data_path, detailed=detailed)
 
-    # Генерация отчета
-    report = predictor.generate_report(results)
-
-    print(f"\n📊 РЕЗУЛЬТАТЫ АНАЛИЗА")
-    print("=" * 50)
-    print(f"Проанализировано: {report['summary']['total_analyzed']}")
-    print(
-        f"Выявлено мошенников: {report['summary']['fraudsters_detected']} ({report['summary']['fraud_rate']:.1f}%)")
-    print(f"\nРаспределение по рискам:")
-    for level, info in report['risk_distribution'].items():
-        print(f"  {level}: {info['count']} ({info['percentage']:.1f}%)")
-
-    # Экспорт результатов
-    predictor.export_results(results, format='json')
+    if detailed:
+        # Генерация отчета
+        report = predictor.generate_report(results)
+        print(f"\n📊 РЕЗУЛЬТАТЫ АНАЛИЗА")
+        print("=" * 50)
+        print(f"Проанализировано: {report['summary']['total_analyzed']}")
+        print(
+            f"Выявлено нарушителей: {report['summary']['fraudsters_detected']} ({report['summary']['fraud_rate']:.1f}%)")
+        print(f"\nРаспределение по рискам:")
+        for level, info in report['risk_distribution'].items():
+            print(f"  {level}: {info['count']} ({info['percentage']:.1f}%)")
+        # Экспорт результатов
+        predictor.export_results(results, format='json')
+    else:
+        print(f"\n✅ Короткий результат: {len(results)} записей")
+        predictor.export_results(
+            results, format='json', filename='predictions_short')
 
     return json.dumps(results, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
     # Пример использования
-    results = predict_fraud('test_data.json')
+    # Короткий результат:
+    results = predict_fraud('test_data.json', detailed=False)
+    # Подробный результат:
+    # results = predict_fraud('test_data.json', detailed=True)
